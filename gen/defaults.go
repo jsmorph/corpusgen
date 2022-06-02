@@ -44,4 +44,22 @@ var (
 		Map:   0.5,
 		Array: 0.5,
 	}
+
+	DefaultLeaf = &Leaf{
+		Strings: String{
+			Length: Int{
+				Min: 5,
+				Max: 30,
+			},
+		},
+		Ints: Int{
+			Min: -100,
+			Max: 100,
+		},
+		Additional: Int{
+			Min: 0,
+			Max: 5,
+		},
+		Match: true,
+	}
 )

@@ -186,26 +186,60 @@ func (p *Trimmer) Trim(x interface{}) interface{} {
 	}
 }
 
-func Arrayify(x interface{}) interface{} {
+type Leaf struct {
+	Strings    String
+	Ints       Int
+	Additional Int
+	Match      bool
+}
+
+func (l *Leaf) ArrayifyAtom(x interface{}) interface{} {
+	more := l.Additional.Sample()
+
+	acc := make([]interface{}, 0, more+1)
+	if l.Match {
+		acc = append(acc, x)
+	}
+	switch x.(type) {
+	case string:
+		for i := 0; i < more; i++ {
+			acc = append(acc, l.Strings.Sample())
+		}
+	case int:
+		for i := 0; i < more; i++ {
+			acc = append(acc, l.Ints.Sample())
+		}
+	case float64:
+		// ToDo: Floats.
+		for i := 0; i < more; i++ {
+			acc = append(acc, l.Ints.Sample())
+		}
+	}
+
+	return acc
+}
+
+func (l *Leaf) Arrayify(x interface{}) interface{} {
 	switch vv := x.(type) {
 	case map[string]interface{}:
 		acc := make(map[string]interface{})
 		for k, v := range vv {
-			acc[k] = Arrayify(v)
+			acc[k] = l.Arrayify(v)
 		}
 		return acc
 	case []interface{}:
 		if len(vv) == 0 {
 			return nil
 		}
-		// If there's a map in here, just return it.
+		// If there's a map in here, deal with it recursively
+		// and ignore the rest.
 		for _, v := range vv {
 			if m, is := v.(map[string]interface{}); is {
-				return Arrayify(m)
+				return l.Arrayify(m)
 			}
 		}
-		// If there's an array in here, ignore it.
-		// Return a subset of the array of atoms.
+		// If there's an array in here, ignore it.  Return a
+		// subset of the array of atoms.
 		atomics := make([]interface{}, 0, len(vv))
 		for _, v := range vv {
 			if _, is := v.([]interface{}); is {
@@ -228,7 +262,7 @@ func Arrayify(x interface{}) interface{} {
 
 		return acc
 	default:
-		return []interface{}{vv}
+		return l.ArrayifyAtom(vv)
 	}
 }
 
@@ -247,12 +281,12 @@ func (v *Value) GenerateEvent(requireMap bool) ([]byte, error) {
 	return nil, fmt.Errorf("GenerateEvent failed to produce a map")
 }
 
-func (t *Trimmer) DerivePattern(event []byte) (string, error) {
+func (t *Trimmer) DerivePattern(l *Leaf, event []byte) (string, error) {
 	var e interface{}
 	if err := json.Unmarshal(event, &e); err != nil {
 		return "", err
 	}
-	p := Arrayify(t.Trim(e))
+	p := l.Arrayify(t.Trim(e))
 	js, err := json.Marshal(&p)
 	if err != nil {
 		return "", err

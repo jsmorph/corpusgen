@@ -18,18 +18,21 @@ func TestBasic(t *testing.T) {
 		v       = DefaultValue
 		trimmer = DefaultTrimmer
 	)
-	event, err := v.GenerateEvent(true)
-	if err != nil {
-		t.Fatal(err)
+
+	for i := 0; i < 5; i++ {
+		event, err := v.GenerateEvent(true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Printf("event:\n%s\n", event)
+		fmt.Printf("%#v\n", ComputeDims(string(event)))
+		pattern, err := trimmer.DerivePattern(DefaultLeaf, event)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Printf("pattern:\n%s\n", pattern)
+		fmt.Printf("%#v\n", ComputeDims(pattern))
 	}
-	fmt.Printf("event:\n%s\n", event)
-	fmt.Printf("%#v\n", ComputeDims(string(event)))
-	pattern, err := trimmer.DerivePattern(event)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Printf("pattern:\n%s\n", pattern)
-	fmt.Printf("%#v\n", ComputeDims(pattern))
 }
 
 func BenchmarkBasic(b *testing.B) {
@@ -62,7 +65,7 @@ func TestGen(t *testing.T) {
 	}
 	fmt.Printf("pruned %s\n", js)
 
-	x = Arrayify(x)
+	x = DefaultLeaf.Arrayify(x)
 	js, err = json.MarshalIndent(&x, "", "  ")
 	if err != nil {
 		t.Fatal(err)

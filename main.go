@@ -21,9 +21,11 @@ func run() error {
 	cfg := struct {
 		Value   *corpusgen.Value
 		Trimmer *corpusgen.Trimmer
+		Leaf    *corpusgen.Leaf
 	}{
 		Value:   corpusgen.DefaultValue,
 		Trimmer: corpusgen.DefaultTrimmer,
+		Leaf:    corpusgen.DefaultLeaf,
 	}
 
 	var (
@@ -94,7 +96,7 @@ func run() error {
 		fmt.Printf("event %s\n", event)
 		printDims("event", event)
 		for j := 0; j < *patternsPerEvent; j++ {
-			pattern, err := cfg.Trimmer.DerivePattern(event)
+			pattern, err := cfg.Trimmer.DerivePattern(cfg.Leaf, event)
 			if err != nil {
 				return err
 			}
@@ -108,7 +110,7 @@ func run() error {
 		if err != nil {
 			return err
 		}
-		pattern, err := cfg.Trimmer.DerivePattern(event)
+		pattern, err := cfg.Trimmer.DerivePattern(cfg.Leaf, event)
 		if err != nil {
 			return err
 		}
