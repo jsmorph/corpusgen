@@ -1,4 +1,4 @@
-package corpusgen
+package gen
 
 import (
 	"encoding/json"

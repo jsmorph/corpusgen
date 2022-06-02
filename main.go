@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/jsmorph/corpusgen"
+	corpusgen "github.com/jsmorph/corpusgen/gen"
 )
 
 func main() {

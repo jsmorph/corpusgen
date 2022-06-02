@@ -1,4 +1,4 @@
-package corpusgen
+package gen
 
 // It's so tempting to get carried away with interfaces for general
 // probability distributions.  I WILL resist this time.  I WILL.
