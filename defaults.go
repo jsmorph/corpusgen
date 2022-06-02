@@ -1,11 +1,5 @@
 package corpusgen
 
-import (
-	"runtime"
-
-	"github.com/timbray/quamina/pruner"
-)
-
 var (
 	DefaultValue = &Value{
 		Map:    0.5,
@@ -46,34 +40,8 @@ var (
 		},
 	}
 
-	DefaultCorpusSpec = &CorpusSpec{
-		V: DefaultValue,
-		Trimmer: &Trimmer{
-			Map:   0.5,
-			Array: 0.5,
-		},
-		MatchingEvents:   1000,
-		MatchingPatterns: 1000,
-		OtherEvents:      1000,
-		OtherPatterns:    1000,
-		PatternIds:       400,
-	}
-
-	DefaultExec = &Exec{
-		Mix: &OpsMix{
-			Adds:    10,
-			Matches: 20,
-			Deletes: 5,
-		},
-		Matcher:    pruner.NewMatcher(nil),
-		Goroutines: runtime.NumCPU(),
-		Filename:   "",
-		Ops:        1000,
+	DefaultTrimmer = &Trimmer{
+		Map:   0.5,
+		Array: 0.5,
 	}
 )
-
-func Defaults() (*CorpusSpec, *Exec) {
-	c := DefaultCorpusSpec.Copy()
-	e := DefaultExec.Copy()
-	return c, e
-}

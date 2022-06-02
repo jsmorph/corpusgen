@@ -13,6 +13,34 @@ func TestDims(t *testing.T) {
 
 }
 
+func TestBasic(t *testing.T) {
+	var (
+		v       = DefaultValue
+		trimmer = DefaultTrimmer
+	)
+	event, err := v.GenerateEvent(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("event:\n%s\n", event)
+	fmt.Printf("%#v\n", ComputeDims(string(event)))
+	pattern, err := trimmer.DerivePattern(event)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("pattern:\n%s\n", pattern)
+	fmt.Printf("%#v\n", ComputeDims(pattern))
+}
+
+func BenchmarkBasic(b *testing.B) {
+
+	for i := 0; i < b.N; i++ {
+		if _, err := DefaultValue.GenerateEvent(true); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func TestGen(t *testing.T) {
 	s := DefaultValue.Copy()
 

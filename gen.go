@@ -4,6 +4,8 @@ package corpusgen
 // probability distributions.  I WILL resist this time.  I WILL.
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/rand"
 )
 
@@ -70,6 +72,44 @@ func (s *Array) Sample(v *Value, decays *Decays) []interface{} {
 	return acc
 }
 
+type Char struct{}
+
+var Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func (s *Char) Sample() byte {
+	i := rand.Intn(len(Chars))
+	return Chars[i]
+}
+
+var char = &Char{}
+
+type String struct {
+	Length      Int
+	Cardinality int
+
+	acc []string
+}
+
+func (s *String) Sample() string {
+	if 0 < s.Cardinality && s.Cardinality <= len(s.acc) {
+		return s.acc[rand.Intn(len(s.acc))]
+	}
+	n := s.Length.Sample()
+	acc := make([]byte, n)
+	for i := range acc {
+		acc[i] = char.Sample()
+	}
+	x := string(acc)
+
+	if 0 < s.Cardinality {
+		if s.acc == nil {
+			s.acc = make([]string, 0, s.Cardinality)
+		}
+		s.acc = append(s.acc, x)
+	}
+	return x
+}
+
 type Value struct {
 	Map, Array, Int, Float, Bool, Null, String float64
 
@@ -81,31 +121,12 @@ type Value struct {
 }
 
 func (v *Value) Copy() *Value {
-	acc := *v
+	// Don't copy non-exported fields, which can be shamelessly
+	// used in unholy ways.
+	js, _ := json.Marshal(v)
+	var acc Value
+	json.Unmarshal(js, &acc)
 	return &acc
-}
-
-type String struct {
-	Length Int
-}
-
-type Char struct{}
-
-func (s *Char) Sample() byte {
-	chars := "abcdefghijklmnopqrstuvwxyz"
-	i := rand.Intn(len(chars))
-	return chars[i]
-}
-
-var char = &Char{}
-
-func (s *String) Sample() string {
-	n := s.Length.Sample()
-	acc := make([]byte, n)
-	for i := range acc {
-		acc[i] = char.Sample()
-	}
-	return string(acc)
 }
 
 func (s *Value) Sample(decays *Decays) interface{} {
@@ -209,4 +230,38 @@ func Arrayify(x interface{}) interface{} {
 	default:
 		return []interface{}{vv}
 	}
+}
+
+func (v *Value) GenerateEvent(requireMap bool) ([]byte, error) {
+	for i := 0; i < 100; i++ {
+		x := v.Sample(nil)
+		if !requireMap || isMap(x) {
+			js, err := json.Marshal(&x)
+			if err != nil {
+				return nil, err
+			}
+
+			return js, nil
+		}
+	}
+	return nil, fmt.Errorf("GenerateEvent failed to produce a map")
+}
+
+func (t *Trimmer) DerivePattern(event []byte) (string, error) {
+	var e interface{}
+	if err := json.Unmarshal(event, &e); err != nil {
+		return "", err
+	}
+	p := Arrayify(t.Trim(e))
+	js, err := json.Marshal(&p)
+	if err != nil {
+		return "", err
+	}
+	return string(js), nil
+
+}
+
+func isMap(x interface{}) bool {
+	_, is := x.(map[string]interface{})
+	return is
 }
