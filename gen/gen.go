@@ -249,7 +249,7 @@ func (l *Leaf) Arrayify(x interface{}) interface{} {
 		return acc
 	case []interface{}:
 		if len(vv) == 0 {
-			return nil
+			return []interface{}{nil}
 		}
 		// If there's a map in here, deal with it recursively
 		// and ignore the rest.
@@ -268,12 +268,12 @@ func (l *Leaf) Arrayify(x interface{}) interface{} {
 			atomics = append(atomics, v)
 		}
 		if 0 == len(atomics) {
-			return nil
+			return []interface{}{nil}
 		}
 		want := rand.Intn(len(atomics)) + 1
 		acc := make([]interface{}, 0, want)
-		for _, i := range rand.Perm(len(vv)) {
-			v := vv[i]
+		for _, i := range rand.Perm(len(atomics)) {
+			v := atomics[i]
 			acc = append(acc, v)
 			if len(acc) == want {
 				break
