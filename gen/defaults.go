@@ -60,6 +60,7 @@ var (
 			Min: 0,
 			Max: 5,
 		},
-		Match: true,
+		ShellStyleRate: 0.5,
+		Match:          true,
 	}
 )

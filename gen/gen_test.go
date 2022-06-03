@@ -84,3 +84,10 @@ func TestValueCopy(t *testing.T) {
 		t.Fatal(c0.Ints, c1.Ints)
 	}
 }
+
+func TestShellStyle(t *testing.T) {
+	s := "Sun comes up; it's Tuesday morning"
+	for i := 0; i < 100; i++ {
+		shellStyle(s)
+	}
+}

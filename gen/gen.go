@@ -187,16 +187,36 @@ func (p *Trimmer) Trim(x interface{}) interface{} {
 }
 
 type Leaf struct {
-	Strings    String
-	Ints       Int
-	Additional Int
-	Match      bool
+	Strings        String
+	Ints           Int
+	Additional     Int
+	Match          bool
+	ShellStyleRate float64
+}
+
+func shellStyle(s string) interface{} {
+	if 0 == len(s) {
+		return s
+	}
+	var (
+		i = rand.Intn(len(s))
+		n = rand.Intn(len(s) - i)
+	)
+
+	return map[string]interface{}{
+		"shellstyle": s[0:i] + "*" + s[i+n:],
+	}
 }
 
 func (l *Leaf) ArrayifyAtom(x interface{}) interface{} {
 	more := l.Additional.Sample()
 
 	acc := make([]interface{}, 0, more+1)
+	if s, is := x.(string); is {
+		if rand.Float64() < l.ShellStyleRate {
+			return []interface{}{shellStyle(s)}
+		}
+	}
 	if l.Match {
 		acc = append(acc, x)
 	}
